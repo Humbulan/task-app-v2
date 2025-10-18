@@ -21,6 +21,20 @@
             from { opacity: 0; transform: translateY(10px); }
             to { opacity: 1; transform: translateY(0); }
         }
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 12px 20px;
+            border-radius: 8px;
+            color: white;
+            z-index: 1000;
+            animation: slideIn 0.3s ease-out;
+        }
+        @keyframes slideIn {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
     </style>
 </head>
 <body class="bg-gradient-to-br from-blue-50 to-indigo-100 min-h-screen">
@@ -352,73 +366,138 @@
             return new Date(dueDate) < new Date().setHours(0,0,0,0);
         }
 
-        // DOM Elements
-        const loginScreen = document.getElementById('loginScreen');
-        const mainApp = document.getElementById('mainApp');
-        const loginForm = document.getElementById('loginForm');
-        const logoutBtn = document.getElementById('logoutBtn');
-        const currentUserSpan = document.getElementById('currentUser');
-        const createTaskForm = document.getElementById('createTaskForm');
-        const registerModal = document.getElementById('registerModal');
-        const registerForm = document.getElementById('registerForm');
-        const showRegisterBtn = document.getElementById('showRegisterBtn');
-        const cancelRegister = document.getElementById('cancelRegister');
-        const cancelEdit = document.getElementById('cancelEdit');
+        // Initialize app when DOM is ready
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('DOM loaded, initializing app...');
+            init();
+        });
 
-        // Initialize app
         function init() {
+            console.log('Initializing app...');
             setupEventListeners();
             populateUserFilters();
             showLogin();
+            console.log('App initialized successfully');
         }
 
         function setupEventListeners() {
-            loginForm.addEventListener('submit', handleLogin);
-            logoutBtn.addEventListener('click', handleLogout);
-            createTaskForm.addEventListener('submit', handleCreateTask);
-            registerForm.addEventListener('submit', handleRegister);
-            showRegisterBtn.addEventListener('click', () => showModal(true));
-            cancelRegister.addEventListener('click', () => showModal(false));
-            cancelEdit.addEventListener('click', cancelTaskEdit);
+            console.log('Setting up event listeners...');
             
-            // Tab navigation
-            document.getElementById('dashboardTab').addEventListener('click', () => showTab('dashboard'));
-            document.getElementById('createTaskTab').addEventListener('click', () => showTab('createTask'));
-            document.getElementById('allTasksTab').addEventListener('click', () => showTab('allTasks'));
+            // Login form
+            const loginForm = document.getElementById('loginForm');
+            if (loginForm) {
+                loginForm.addEventListener('submit', handleLogin);
+                console.log('Login form listener added');
+            }
+
+            // Logout button
+            const logoutBtn = document.getElementById('logoutBtn');
+            if (logoutBtn) {
+                logoutBtn.addEventListener('click', handleLogout);
+                console.log('Logout button listener added');
+            }
+
+            // Create task form
+            const createTaskForm = document.getElementById('createTaskForm');
+            if (createTaskForm) {
+                createTaskForm.addEventListener('submit', handleCreateTask);
+                console.log('Create task form listener added');
+            }
+
+            // Register form
+            const registerForm = document.getElementById('registerForm');
+            if (registerForm) {
+                registerForm.addEventListener('submit', handleRegister);
+                console.log('Register form listener added');
+            }
+
+            // Show register button
+            const showRegisterBtn = document.getElementById('showRegisterBtn');
+            if (showRegisterBtn) {
+                showRegisterBtn.addEventListener('click', () => showModal(true));
+                console.log('Show register button listener added');
+            }
+
+            // Cancel register button
+            const cancelRegister = document.getElementById('cancelRegister');
+            if (cancelRegister) {
+                cancelRegister.addEventListener('click', () => showModal(false));
+                console.log('Cancel register button listener added');
+            }
+
+            // Cancel edit button
+            const cancelEdit = document.getElementById('cancelEdit');
+            if (cancelEdit) {
+                cancelEdit.addEventListener('click', cancelTaskEdit);
+                console.log('Cancel edit button listener added');
+            }
             
-            // Search and filter
-            document.getElementById('taskSearch').addEventListener('input', renderTasks);
-            document.getElementById('statusFilter').addEventListener('change', renderTasks);
-            document.getElementById('userFilter').addEventListener('change', renderTasks);
+            // Tab navigation - FIXED: Check if elements exist
+            const dashboardTab = document.getElementById('dashboardTab');
+            const createTaskTab = document.getElementById('createTaskTab');
+            const allTasksTab = document.getElementById('allTasksTab');
+            
+            if (dashboardTab) {
+                dashboardTab.addEventListener('click', () => showTab('dashboard'));
+                console.log('Dashboard tab listener added');
+            }
+            if (createTaskTab) {
+                createTaskTab.addEventListener('click', () => showTab('createTask'));
+                console.log('Create task tab listener added');
+            }
+            if (allTasksTab) {
+                allTasksTab.addEventListener('click', () => showTab('allTasks'));
+                console.log('All tasks tab listener added');
+            }
+            
+            // Search and filter - FIXED: Check if elements exist
+            const taskSearch = document.getElementById('taskSearch');
+            const statusFilter = document.getElementById('statusFilter');
+            const userFilter = document.getElementById('userFilter');
+            
+            if (taskSearch) taskSearch.addEventListener('input', renderTasks);
+            if (statusFilter) statusFilter.addEventListener('change', renderTasks);
+            if (userFilter) userFilter.addEventListener('change', renderTasks);
+
+            console.log('All event listeners setup complete');
         }
 
         function populateUserFilters() {
             const assignToSelect = document.getElementById('assignTo');
             const userFilterSelect = document.getElementById('userFilter');
             
-            // Clear existing options except first
-            assignToSelect.innerHTML = '<option value="">Select team member</option>';
-            userFilterSelect.innerHTML = '<option value="all">All Users</option>';
+            if (assignToSelect) {
+                assignToSelect.innerHTML = '<option value="">Select team member</option>';
+            }
+            if (userFilterSelect) {
+                userFilterSelect.innerHTML = '<option value="all">All Users</option>';
+            }
             
             // Add users
             Object.keys(users).forEach(username => {
                 const displayName = users[username].name || username;
-                assignToSelect.innerHTML += `<option value="${username}">${displayName}</option>`;
-                userFilterSelect.innerHTML += `<option value="${username}">${displayName}</option>`;
+                if (assignToSelect) {
+                    assignToSelect.innerHTML += `<option value="${username}">${displayName}</option>`;
+                }
+                if (userFilterSelect) {
+                    userFilterSelect.innerHTML += `<option value="${username}">${displayName}</option>`;
+                }
             });
         }
 
         async function handleLogin(e) {
             e.preventDefault();
+            console.log('Login attempt...');
+            
             const username = document.getElementById('username').value.toLowerCase();
             const password = document.getElementById('password').value;
             
             // Show loading state
             const loginText = document.getElementById('loginText');
             const loginSpinner = document.getElementById('loginSpinner');
-            loginText.textContent = 'Signing In...';
-            loginSpinner.classList.remove('hidden');
-            loginForm.classList.add('loading');
+            if (loginText) loginText.textContent = 'Signing In...';
+            if (loginSpinner) loginSpinner.classList.remove('hidden');
+            if (loginForm) loginForm.classList.add('loading');
             
             // Simulate API call delay
             await new Promise(resolve => setTimeout(resolve, 1000));
@@ -427,14 +506,16 @@
                 currentUser = username;
                 showMainApp();
                 showNotification(`Welcome back, ${users[username].name || username}!`, 'success');
+                console.log('Login successful for user:', username);
             } else {
                 showNotification('Invalid username or password', 'error');
+                console.log('Login failed for user:', username);
             }
             
             // Reset loading state
-            loginText.textContent = 'Sign In';
-            loginSpinner.classList.add('hidden');
-            loginForm.classList.remove('loading');
+            if (loginText) loginText.textContent = 'Sign In';
+            if (loginSpinner) loginSpinner.classList.add('hidden');
+            if (loginForm) loginForm.classList.remove('loading');
         }
 
         function handleRegister(e) {
@@ -465,7 +546,7 @@
             showNotification('Account created successfully! Please login.', 'success');
             
             // Clear form
-            registerForm.reset();
+            if (registerForm) registerForm.reset();
         }
 
         function handleCreateTask(e) {
@@ -556,29 +637,46 @@
         }
 
         function showLogin() {
-            loginScreen.classList.remove('hidden');
-            mainApp.classList.add('hidden');
+            const loginScreen = document.getElementById('loginScreen');
+            const mainApp = document.getElementById('mainApp');
+            
+            if (loginScreen) loginScreen.classList.remove('hidden');
+            if (mainApp) mainApp.classList.add('hidden');
+            
             document.getElementById('username').value = '';
             document.getElementById('password').value = '';
         }
 
         function showMainApp() {
-            loginScreen.classList.add('hidden');
-            mainApp.classList.remove('hidden');
+            const loginScreen = document.getElementById('loginScreen');
+            const mainApp = document.getElementById('mainApp');
+            
+            if (loginScreen) loginScreen.classList.add('hidden');
+            if (mainApp) mainApp.classList.remove('hidden');
+            
             const displayName = users[currentUser]?.name || currentUser;
-            currentUserSpan.textContent = displayName.charAt(0).toUpperCase() + displayName.slice(1);
+            const currentUserSpan = document.getElementById('currentUser');
+            if (currentUserSpan) {
+                currentUserSpan.textContent = displayName.charAt(0).toUpperCase() + displayName.slice(1);
+            }
+            
             showTab('dashboard');
             updateStats();
         }
 
         function showModal(show) {
-            registerModal.classList.toggle('hidden', !show);
-            if (!show) {
-                registerForm.reset();
+            const registerModal = document.getElementById('registerModal');
+            if (registerModal) {
+                registerModal.classList.toggle('hidden', !show);
+                if (!show) {
+                    registerForm.reset();
+                }
             }
         }
 
         function showTab(tabName) {
+            console.log('Switching to tab:', tabName);
+            
             // Update tab buttons
             document.querySelectorAll('.tab-btn').forEach(btn => {
                 btn.classList.remove('border-blue-500', 'text-blue-600');
@@ -589,9 +687,17 @@
             document.querySelectorAll('.tab-content').forEach(content => content.classList.add('hidden'));
             
             // Show selected tab
-            document.getElementById(`${tabName}Tab`).classList.remove('border-transparent', 'text-gray-500');
-            document.getElementById(`${tabName}Tab`).classList.add('border-blue-500', 'text-blue-600');
-            document.getElementById(`${tabName}View`).classList.remove('hidden');
+            const selectedTabBtn = document.getElementById(`${tabName}Tab`);
+            const selectedTabContent = document.getElementById(`${tabName}View`);
+            
+            if (selectedTabBtn) {
+                selectedTabBtn.classList.remove('border-transparent', 'text-gray-500');
+                selectedTabBtn.classList.add('border-blue-500', 'text-blue-600');
+            }
+            
+            if (selectedTabContent) {
+                selectedTabContent.classList.remove('hidden');
+            }
             
             // Render tasks for relevant tabs
             if (tabName === 'dashboard' || tabName === 'allTasks') {
@@ -609,9 +715,13 @@
             const pendingTasks = myTasks.filter(task => task.status === 'pending').length;
             const completedTasks = myTasks.filter(task => task.status === 'completed').length;
             
-            document.getElementById('totalTasksCount').textContent = totalTasks;
-            document.getElementById('pendingTasksCount').textContent = pendingTasks;
-            document.getElementById('completedTasksCount').textContent = completedTasks;
+            const totalTasksCount = document.getElementById('totalTasksCount');
+            const pendingTasksCount = document.getElementById('pendingTasksCount');
+            const completedTasksCount = document.getElementById('completedTasksCount');
+            
+            if (totalTasksCount) totalTasksCount.textContent = totalTasks;
+            if (pendingTasksCount) pendingTasksCount.textContent = pendingTasks;
+            if (completedTasksCount) completedTasksCount.textContent = completedTasks;
         }
 
         function renderTasks() {
@@ -619,9 +729,9 @@
             const allTasksContainer = document.getElementById('allTasks');
             
             // Get filter values
-            const searchTerm = document.getElementById('taskSearch').value.toLowerCase();
-            const statusFilter = document.getElementById('statusFilter').value;
-            const userFilter = document.getElementById('userFilter').value;
+            const searchTerm = document.getElementById('taskSearch')?.value.toLowerCase() || '';
+            const statusFilter = document.getElementById('statusFilter')?.value || 'all';
+            const userFilter = document.getElementById('userFilter')?.value || 'all';
             
             // Filter tasks for current user (dashboard)
             let myTasks = tasks.filter(task => task.assignedTo === currentUser);
@@ -637,14 +747,18 @@
             });
             
             // Render my tasks
-            myTasksContainer.innerHTML = myTasks.length === 0 ? 
-                '<div class="text-center py-12"><i class="fas fa-tasks text-4xl text-gray-300 mb-4"></i><p class="text-gray-500">No tasks assigned to you yet.</p></div>' :
-                myTasks.map(task => createTaskCard(task, true)).join('');
+            if (myTasksContainer) {
+                myTasksContainer.innerHTML = myTasks.length === 0 ? 
+                    '<div class="text-center py-12"><i class="fas fa-tasks text-4xl text-gray-300 mb-4"></i><p class="text-gray-500">No tasks assigned to you yet.</p></div>' :
+                    myTasks.map(task => createTaskCard(task, true)).join('');
+            }
             
             // Render all tasks
-            allTasksContainer.innerHTML = filteredTasks.length === 0 ? 
-                '<div class="text-center py-12"><i class="fas fa-search text-4xl text-gray-300 mb-4"></i><p class="text-gray-500">No tasks match your filters.</p></div>' :
-                filteredTasks.map(task => createTaskCard(task, false)).join('');
+            if (allTasksContainer) {
+                allTasksContainer.innerHTML = filteredTasks.length === 0 ? 
+                    '<div class="text-center py-12"><i class="fas fa-search text-4xl text-gray-300 mb-4"></i><p class="text-gray-500">No tasks match your filters.</p></div>' :
+                    filteredTasks.map(task => createTaskCard(task, false)).join('');
+            }
         }
 
         function createTaskCard(task, showCompleteBtn) {
@@ -728,8 +842,8 @@
             document.querySelectorAll('.notification').forEach(n => n.remove());
             
             const notification = document.createElement('div');
-            notification.className = `fixed top-4 right-4 px-6 py-3 rounded-md shadow-lg z-50 notification fade-in ${
-                type === 'success' ? 'bg-green-500 text-white' : 'bg-red-500 text-white'
+            notification.className = `notification ${
+                type === 'success' ? 'bg-green-500' : 'bg-red-500'
             }`;
             notification.innerHTML = `
                 <div class="flex items-center">
@@ -746,8 +860,10 @@
             }, 3000);
         }
 
-        // Initialize the app
-        init();
+        // Make functions globally available for onclick handlers
+        window.completeTask = completeTask;
+        window.editTask = editTask;
+        window.deleteTask = deleteTask;
     </script>
 </body>
-</html>
+                                            </html>
