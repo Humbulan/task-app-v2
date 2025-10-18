@@ -298,54 +298,7 @@
 
                 <h2>Task List</h2>
                 <ul class="task-list" id="task-list">
-                    <li class="task-item priority-high">
-                        <div class="task-header">
-                            <div class="task-title">Design new landing page</div>
-                            <div class="task-meta">
-                                <span>Assigned to: Alice</span>
-                                <span>Due: 2023-12-15</span>
-                                <span>High Priority</span>
-                            </div>
-                        </div>
-                        <p>Create responsive design with modern UI elements and ensure mobile compatibility</p>
-                        <div class="task-actions">
-                            <button class="btn btn-success complete-btn">Mark Complete</button>
-                            <button class="btn btn-danger delete-btn">Delete</button>
-                            <button class="btn btn-outline edit-btn">Edit</button>
-                        </div>
-                    </li>
-                    <li class="task-item priority-medium">
-                        <div class="task-header">
-                            <div class="task-title">Review API documentation</div>
-                            <div class="task-meta">
-                                <span>Assigned to: Bob</span>
-                                <span>Due: 2023-12-18</span>
-                                <span>Medium Priority</span>
-                            </div>
-                        </div>
-                        <p>Check for accuracy, completeness and update endpoints as needed</p>
-                        <div class="task-actions">
-                            <button class="btn btn-success complete-btn">Mark Complete</button>
-                            <button class="btn btn-danger delete-btn">Delete</button>
-                            <button class="btn btn-outline edit-btn">Edit</button>
-                        </div>
-                    </li>
-                    <li class="task-item completed priority-low">
-                        <div class="task-header">
-                            <div class="task-title">Setup project repository</div>
-                            <div class="task-meta">
-                                <span>Assigned to: Charlie</span>
-                                <span>Due: 2023-12-10</span>
-                                <span>Low Priority</span>
-                            </div>
-                        </div>
-                        <p>Initialize Git repository and set up branching strategy</p>
-                        <div class="task-actions">
-                            <button class="btn btn-primary undo-btn">Mark Incomplete</button>
-                            <button class="btn btn-danger delete-btn">Delete</button>
-                            <button class="btn btn-outline edit-btn">Edit</button>
-                        </div>
-                    </li>
+                    <!-- Tasks will be loaded dynamically from localStorage -->
                 </ul>
             </div>
 
@@ -396,7 +349,122 @@
     </div>
 
     <script>
+        // ========== LOCALSTORAGE FUNCTIONS ==========
+        function saveTasksToLocalStorage() {
+            const tasks = [];
+            document.querySelectorAll('.task-item').forEach(task => {
+                const metaSpans = task.querySelectorAll('.task-meta span');
+                tasks.push({
+                    title: task.querySelector('.task-title').textContent,
+                    description: task.querySelector('p').textContent,
+                    assignee: metaSpans[0].textContent.replace('Assigned to: ', ''),
+                    dueDate: metaSpans[1].textContent.replace('Due: ', ''),
+                    priority: task.classList.contains('priority-high') ? 'high' : 
+                             task.classList.contains('priority-medium') ? 'medium' : 'low',
+                    completed: task.classList.contains('completed')
+                });
+            });
+            localStorage.setItem('teamTasks', JSON.stringify(tasks));
+        }
+
+        function loadTasksFromLocalStorage() {
+            const savedTasks = localStorage.getItem('teamTasks');
+            if (savedTasks) {
+                const tasks = JSON.parse(savedTasks);
+                const taskList = document.getElementById('task-list');
+                taskList.innerHTML = '';
+                
+                tasks.forEach(task => {
+                    const taskItem = document.createElement('li');
+                    taskItem.className = `task-item priority-${task.priority} ${task.completed ? 'completed' : ''}`;
+                    
+                    taskItem.innerHTML = `
+                        <div class="task-header">
+                            <div class="task-title">${task.title}</div>
+                            <div class="task-meta">
+                                <span>Assigned to: ${task.assignee}</span>
+                                <span>Due: ${task.dueDate}</span>
+                                <span>${task.priority.charAt(0).toUpperCase() + task.priority.slice(1)} Priority</span>
+                            </div>
+                        </div>
+                        <p>${task.description}</p>
+                        <div class="task-actions">
+                            <button class="btn btn-success complete-btn" ${task.completed ? 'style="display:none"' : ''}>Mark Complete</button>
+                            <button class="btn btn-danger delete-btn">Delete</button>
+                            <button class="btn btn-outline edit-btn">Edit</button>
+                            <button class="btn btn-primary undo-btn" ${task.completed ? '' : 'style="display:none"'}>Mark Incomplete</button>
+                        </div>
+                    `;
+                    
+                    taskList.appendChild(taskItem);
+                });
+                updateStats();
+            } else {
+                // Load default tasks if no saved tasks exist
+                loadDefaultTasks();
+            }
+        }
+
+        function loadDefaultTasks() {
+            const taskList = document.getElementById('task-list');
+            taskList.innerHTML = `
+                <li class="task-item priority-high">
+                    <div class="task-header">
+                        <div class="task-title">Design new landing page</div>
+                        <div class="task-meta">
+                            <span>Assigned to: Alice</span>
+                            <span>Due: 2023-12-15</span>
+                            <span>High Priority</span>
+                        </div>
+                    </div>
+                    <p>Create responsive design with modern UI elements and ensure mobile compatibility</p>
+                    <div class="task-actions">
+                        <button class="btn btn-success complete-btn">Mark Complete</button>
+                        <button class="btn btn-danger delete-btn">Delete</button>
+                        <button class="btn btn-outline edit-btn">Edit</button>
+                    </div>
+                </li>
+                <li class="task-item priority-medium">
+                    <div class="task-header">
+                        <div class="task-title">Review API documentation</div>
+                        <div class="task-meta">
+                            <span>Assigned to: Bob</span>
+                            <span>Due: 2023-12-18</span>
+                            <span>Medium Priority</span>
+                        </div>
+                    </div>
+                    <p>Check for accuracy, completeness and update endpoints as needed</p>
+                    <div class="task-actions">
+                        <button class="btn btn-success complete-btn">Mark Complete</button>
+                        <button class="btn btn-danger delete-btn">Delete</button>
+                        <button class="btn btn-outline edit-btn">Edit</button>
+                    </div>
+                </li>
+                <li class="task-item completed priority-low">
+                    <div class="task-header">
+                        <div class="task-title">Setup project repository</div>
+                        <div class="task-meta">
+                            <span>Assigned to: Charlie</span>
+                            <span>Due: 2023-12-10</span>
+                            <span>Low Priority</span>
+                        </div>
+                    </div>
+                    <p>Initialize Git repository and set up branching strategy</p>
+                    <div class="task-actions">
+                        <button class="btn btn-primary undo-btn">Mark Incomplete</button>
+                        <button class="btn btn-danger delete-btn">Delete</button>
+                        <button class="btn btn-outline edit-btn">Edit</button>
+                    </div>
+                </li>
+            `;
+            updateStats();
+        }
+
+        // ========== MAIN APPLICATION CODE ==========
         document.addEventListener('DOMContentLoaded', function() {
+            // Load tasks from localStorage on startup
+            loadTasksFromLocalStorage();
+
             // Task form submission
             document.getElementById('task-form').addEventListener('submit', function(e) {
                 e.preventDefault();
@@ -428,6 +496,7 @@
                     task.remove();
                 });
                 updateStats();
+                saveTasksToLocalStorage();
             });
 
             // Mark all as pending
@@ -443,6 +512,7 @@
                     }
                 });
                 updateStats();
+                saveTasksToLocalStorage();
             });
 
             // Event delegation for task actions
@@ -454,6 +524,7 @@
                     e.target.style.display = 'none';
                     taskItem.querySelector('.undo-btn').style.display = 'block';
                     updateStats();
+                    saveTasksToLocalStorage();
                 }
                 
                 if (e.target.classList.contains('undo-btn')) {
@@ -461,18 +532,20 @@
                     e.target.style.display = 'none';
                     taskItem.querySelector('.complete-btn').style.display = 'block';
                     updateStats();
+                    saveTasksToLocalStorage();
                 }
                 
                 if (e.target.classList.contains('delete-btn')) {
                     taskItem.remove();
                     updateStats();
+                    saveTasksToLocalStorage();
                 }
                 
                 if (e.target.classList.contains('edit-btn')) {
-                    // Simple edit - in a real app this would open a modal
                     const title = prompt('Edit task title:', taskItem.querySelector('.task-title').textContent);
                     if (title) {
                         taskItem.querySelector('.task-title').textContent = title;
+                        saveTasksToLocalStorage();
                     }
                 }
             });
@@ -502,6 +575,7 @@
                 
                 taskList.appendChild(taskItem);
                 updateStats();
+                saveTasksToLocalStorage();
             }
 
             function filterTasks(filter) {
